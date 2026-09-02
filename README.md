@@ -397,7 +397,6 @@ Enterprise AI Platform Engineer
 Add your links before publishing:
 
 ```text
-GitHub: https://github.com/YOUR_GITHUB_USERNAME
-LinkedIn: https://linkedin.com/in/YOUR_LINKEDIN
-Demo: YOUR_DEMO_URL
+GitHub: https://github.com/Mkatpelly
+LinkedIn: https://linkedin.com/in/Munvith_Katpelly
 ```
