@@ -1,114 +1,104 @@
 # IncidentIQ
 
-## Enterprise AI Investigation & Decision Intelligence Platform
+## Offline Enterprise Incident Investigation Platform
 
-IncidentIQ is a Java/Spring Boot application that helps engineering and operations teams investigate payment failures using transaction data, anomaly detection, service-health signals, deployment history, incident records, and operational runbooks.
+IncidentIQ is a Java/Spring Boot application for investigating payment-service incidents using transaction data, service-health signals, deployment history, incident records, and locally stored operational runbooks.
 
-It simulates a Forward Deployed AI Engineer / Applied AI Engineer engagement for a fictional enterprise customer, **ACME Payments**.
+The project is an **offline-first MVP** for an enterprise incident-intelligence workflow. It demonstrates explainable anomaly detection, deterministic investigation orchestration, keyword-based document retrieval, role checks, audit logging, and human approval requirements for high-impact recommendations.
 
 > Example question:  
-> “Why did payment failures increase this week, which customers are affected, what is the likely cause, and what should we do?”
+> “Why did payment failures increase this week, which services may be affected, and what should the operations team investigate next?”
 
 ---
 
 ## Problem
 
-When payment failures spike, engineers often investigate manually across dashboards, transaction databases, deployment logs, incident-management tools, and runbooks. This process is slow, inconsistent, and difficult to audit.
+When payment failures increase, engineers may need to check multiple systems manually:
 
-IncidentIQ turns that fragmented process into an evidence-backed workflow:
+- Transaction dashboards and payment records
+- Service-health status
+- Recent deployment history
+- Previous incidents
+- Operational runbooks and troubleshooting guides
+
+This investigation can be slow, inconsistent, and difficult to audit. IncidentIQ brings these steps into one evidence-backed workflow.
 
 ```text
-User Question
+Incident Question
       ↓
-Payment and Service Investigation
+Role Validation + Audit Log
       ↓
-Anomaly Detection + RAG + Operational Data
+Transaction and Service Investigation
+      ↓
+Anomaly Detection + Offline Document Retrieval
       ↓
 Evidence-Backed Diagnosis
       ↓
-Recommended Action
-      ↓
-Human Approval for High-Impact Actions
+Recommendation with Risk and Approval Requirement
 ```
-
-### Business targets
-
-| Metric | Current | Target |
-|---|---:|---:|
-| Investigation time | 35 minutes | Less than 10 minutes |
-| Root-cause accuracy | 65% | Greater than 90% |
-| Manual steps | 12 | Less than 5 |
-| High-impact actions | Manual | Human-approved and auditable |
-
-> These are project targets, not measured claims. Final results should be reported only after testing against historical or synthetic incident cases.
 
 ---
 
-## Features
+## Current MVP Features
 
-- **Payment anomaly detection:** compares current payment-failure rates with a historical baseline
-- **Enterprise investigation tools:** retrieves customer, transaction, service-health, deployment, and incident information
-- **RAG foundation:** searches runbooks, postmortems, troubleshooting guides, and architecture documents
-- **Agent workflow:** orchestrates a multi-step investigation and returns a tool trace
-- **Evidence-backed diagnosis:** returns sources, findings, confidence, risk level, and a recommended next action
-- **Human-in-the-loop controls:** requires approval before high-impact actions are executed
-- **RBAC:** controls what admins, analysts, support engineers, and viewers can do
-- **Audit logging:** records who requested an investigation, what was accessed, and whether the request was authorized
-- **REST API:** exposes investigation capabilities through a Spring Boot service
+| Capability | Status | Current Implementation |
+|---|---|---|
+| Spring Boot REST API | Implemented | Java/Spring Boot API foundation |
+| Local database | Implemented | H2 in-memory database for local development |
+| Payment anomaly detection | Implemented | Explainable comparison of recent versus baseline failure rates |
+| Enterprise incident data | Implemented | Synthetic customer, payment, service, deployment, and incident records |
+| Investigation orchestration | Implemented | Deterministic multi-step Java service workflow |
+| Document retrieval | Implemented | Offline in-memory keyword retrieval over runbooks and incident documents |
+| Retrieval ranking | Basic | Keyword matching; no embedding or vector similarity ranking yet |
+| RBAC | MVP implemented | Server-side role permission checks |
+| Audit logging | MVP implemented | Investigation authorization events can be recorded |
+| Human approval gate | MVP implemented | High-risk recommendations indicate when approval is required |
+| Semantic/vector retrieval | Planned | PostgreSQL + pgvector or local embedding model |
+| LLM synthesis/tool calling | Planned | Structured tool interfaces designed for future integration |
+| OAuth2/JWT authentication | Planned | Spring Security plus enterprise identity-provider integration |
+| External Jira/Slack actions | Planned | Recommendation-only workflow in current MVP |
+| Automated tests and CI | In progress | Unit tests and GitHub Actions planned |
 
 ---
 
 ## Architecture
 
 ```text
-                     Web Dashboard / API Client
+                    API Client / Future Web UI
                                 │
                                 ▼
-                    Spring Boot REST API Layer
+                    Spring Boot REST Controllers
                                 │
                                 ▼
-                 Investigation Agent / Orchestrator
+                Investigation Agent / Orchestrator
                                 │
          ┌──────────────────────┼──────────────────────┐
          ▼                      ▼                      ▼
-  Anomaly Detection         RAG Service            Tool Registry
+  Anomaly Detection      Offline Retrieval        Enterprise Data Tools
          │                      │                      │
          ▼                      ▼                      ▼
- Payment Transactions     Runbooks / Docs       Services / Incidents /
-                                                Deployments / Customers
+ Payment Records       Runbooks / Incidents    Services / Deployments /
+                                               Customers / Audit Logs
                                 │
                                 ▼
-                    Human Approval Workflow
+                  Evidence-Backed Recommendation
                                 │
                                 ▼
-                Jira / Slack / Incident Actions
-                  (future implementation)
+                     Human Approval Requirement
 ```
 
-### Investigation flow
+### Current investigation workflow
 
 ```text
-1. User submits an incident question.
-2. System validates the user role.
-3. System writes an audit log.
-4. Agent queries payment transactions.
-5. Agent detects failure-rate anomalies.
-6. Agent checks service health and deployment history.
-7. Agent searches past incidents and runbooks.
-8. Agent returns a diagnosis, evidence, and recommendation.
-9. High-impact actions require human approval.
-```
-
-Example tool trace:
-
-```text
-get_customer()
-query_transactions()
-detect_anomaly()
-get_service_health()
-get_deployment_history()
-search_incidents()
-search_docs()
+1. User submits an incident-investigation request.
+2. The system validates the user role.
+3. The system writes an audit event.
+4. The investigation service examines payment data.
+5. The anomaly service compares current failures with the baseline.
+6. The system checks service health and recent deployments.
+7. The retrieval service searches offline runbooks and past incidents.
+8. The system returns a diagnosis, evidence, risk, and recommendation.
+9. High-risk recommendations require human approval before action.
 ```
 
 ---
@@ -118,19 +108,21 @@ search_docs()
 | Area | Technology |
 |---|---|
 | Language | Java 21 |
-| Backend | Spring Boot 3 |
+| Framework | Spring Boot 3 |
 | API | Spring Web / REST |
-| Persistence | Spring Data JPA |
+| Data access | Spring Data JPA |
 | Local database | H2 |
-| Production database | PostgreSQL, planned |
 | Validation | Jakarta Bean Validation |
-| Monitoring | Spring Boot Actuator |
-| Containerization | Docker |
-| Security | Spring Security, OAuth2/OIDC, planned |
-| RAG | pgvector, OpenSearch, or vector DB, planned |
-| LLM provider | OpenAI, Anthropic, AWS Bedrock, or Azure OpenAI, planned |
+| Operations | Spring Boot Actuator |
+| Build tool | Maven |
+| Development environment | VS Code or IntelliJ IDEA |
+| Retrieval | Offline keyword-based document retrieval |
+| Future database | PostgreSQL |
+| Future vector search | pgvector or another vector database |
+| Future embeddings | Local embedding model or hosted embedding provider |
+| Future AI orchestration | LLM tool calling with structured outputs |
 
-Spring Boot applications use `SpringApplication.run(...)` to start the application, and Maven projects can be run locally with `mvn spring-boot:run`. [web:65]
+Spring Boot applications can be run from Maven with `mvn spring-boot:run`, and the Maven plugin supports packaging and running executable Spring Boot applications. [web:132][web:166]
 
 ---
 
@@ -140,77 +132,112 @@ Spring Boot applications use `SpringApplication.run(...)` to start the applicati
 incidentiq/
 ├── pom.xml
 ├── README.md
-├── Dockerfile
-├── docker-compose.yml
+├── .gitignore
 │
-├── src/main/java/com/acme/intelligence/
-│   ├── EnterpriseAiApplication.java
-│   ├── config/
-│   │   └── DataSeeder.java
-│   ├── controller/
-│   │   └── InvestigationController.java
-│   ├── domain/
-│   │   ├── Customer.java
-│   │   ├── Payment.java
-│   │   ├── ServiceStatus.java
-│   │   ├── Deployment.java
-│   │   ├── Incident.java
-│   │   └── AuditLog.java
-│   ├── dto/
-│   ├── repository/
-│   ├── service/
-│   │   ├── InvestigationAgent.java
-│   │   ├── ToolRegistry.java
-│   │   ├── AnomalyDetectionService.java
-│   │   ├── RagService.java
-│   │   ├── SecurityService.java
-│   │   └── AuditService.java
-│   └── support/
-│       └── Role.java
-│
-└── src/main/resources/
-    └── application.yml
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/acme/intelligence/
+    │   │       ├── EnterpriseAiApplication.java
+    │   │       │
+    │   │       ├── controller/
+    │   │       │   ├── HealthController.java
+    │   │       │   └── InvestigationController.java
+    │   │       │
+    │   │       ├── domain/
+    │   │       │   ├── Customer.java
+    │   │       │   ├── Payment.java
+    │   │       │   ├── ServiceStatus.java
+    │   │       │   ├── Deployment.java
+    │   │       │   ├── Incident.java
+    │   │       │   └── AuditLog.java
+    │   │       │
+    │   │       ├── dto/
+    │   │       │   ├── InvestigationRequest.java
+    │   │       │   └── InvestigationResponse.java
+    │   │       │
+    │   │       ├── service/
+    │   │       │   ├── AnomalyDetectionService.java
+    │   │       │   ├── AuditService.java
+    │   │       │   ├── InvestigationAgent.java
+    │   │       │   ├── RagService.java
+    │   │       │   └── SecurityService.java
+    │   │       │
+    │   │       └── support/
+    │   │           └── Role.java
+    │   │
+    │   └── resources/
+    │       └── application.properties
+    │
+    └── test/
+        └── java/
+            └── com/acme/intelligence/
 ```
 
 ---
 
-## Getting Started
+## Run Locally
 
 ### Prerequisites
 
-- Java 21+
-- Maven 3.9+
+- Java 21 or later
+- Maven 3.9 or later
 - Git
-- Docker Desktop, optional
+- VS Code or IntelliJ IDEA
 
-Verify your setup:
+Verify your installation:
 
 ```bash
 java --version
 mvn --version
 ```
 
-### Run locally
+### Start the application
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/YOUR_GITHUB_USERNAME/incidentiq.git
 cd incidentiq
+```
+
+Run the project:
+
+```bash
 mvn spring-boot:run
 ```
 
-The API will start at:
+For projects generated with the Maven wrapper:
+
+**Windows PowerShell**
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+**macOS/Linux**
+
+```bash
+./mvnw spring-boot:run
+```
+
+The API starts locally on:
 
 ```text
 http://localhost:8080
 ```
 
-### Test health
+---
 
-```bash
-curl http://localhost:8080/api/v1/health
+## API Endpoints
+
+### Application health
+
+```http
+GET /api/v1/health
 ```
 
-Expected response:
+Example response:
 
 ```json
 {
@@ -218,19 +245,35 @@ Expected response:
 }
 ```
 
-If Spring Boot Actuator is enabled, check application health with:
+Test it:
+
+```bash
+curl http://localhost:8080/api/v1/health
+```
+
+### Spring Boot operational health
+
+```http
+GET /actuator/health
+```
+
+Test it:
 
 ```bash
 curl http://localhost:8080/actuator/health
 ```
 
-The Actuator health endpoint provides application health information at `/actuator/health`. [web:22]
+Expected response:
 
----
+```json
+{
+  "status": "UP"
+}
+```
 
-## API Usage
+Spring Boot Actuator provides built-in production-oriented endpoints, including the application-health endpoint at `/actuator/health`. [web:22][web:171]
 
-### Investigate payment failures
+### Investigation endpoint
 
 ```http
 POST /api/v1/investigate
@@ -249,37 +292,34 @@ curl -X POST http://localhost:8080/api/v1/investigate \
   }'
 ```
 
-Example response:
+Example response shape:
 
 ```json
 {
-  "diagnosis": "Payment failures are elevated above the expected baseline. The most likely driver is instability in Payment API, supported by anomaly metrics, service health, deployment history, incidents, and runbook guidance.",
+  "diagnosis": "Payment failures are above the expected baseline. Payment API degradation and a recent deployment should be investigated.",
   "evidence": [
     {
-      "source": "ml.anomaly",
-      "detail": "Current failure rate: 18.75%. Baseline: 7.5%."
+      "source": "anomaly-detection",
+      "detail": "The current payment failure rate exceeds the historical baseline."
     },
     {
-      "source": "service.health",
-      "detail": "Degraded services: Payment API."
+      "source": "service-health",
+      "detail": "Payment API is reporting degraded status."
     },
     {
-      "source": "rag.runbook/payment-auth",
-      "detail": "Inspect recent deployments, gateway health, regional spikes, and retry configuration changes."
+      "source": "offline-runbook",
+      "detail": "Review recent deployments, gateway health, regional errors, and retry configuration."
     }
   ],
   "toolsUsed": [
-    "get_customer",
     "query_transactions",
     "detect_anomaly",
     "get_service_health",
     "get_deployment_history",
-    "search_incidents",
     "search_docs"
   ],
   "recommendation": {
-    "summary": "Create a P1 incident, notify payment engineering, and review the most recent deployment.",
-    "confidence": 0.93,
+    "summary": "Escalate to payment engineering and review the most recent deployment.",
     "risk": "high",
     "approvalRequired": true
   }
@@ -288,95 +328,154 @@ Example response:
 
 ---
 
-## Roles and Safety
+## Offline Retrieval Design
 
-| Role | Investigate | Approve Actions | Jira / Slack Actions |
-|---|---:|---:|---:|
-| `ADMIN` | Yes | Yes | Yes |
-| `ANALYST` | Yes | No | No |
-| `SUPPORT_ENGINEER` | Yes | No | Yes |
-| `VIEWER` | No | No | No |
+The current version does **not** call an embedding API, an LLM, or a cloud vector database.
 
-The starter application accepts `userRole` in the request body only for local demonstration. In a production system, roles must come from verified JWT/OAuth2 or enterprise SSO claims.
+Instead, it uses an offline document list containing synthetic operational knowledge, such as:
 
-High-impact actions should not run automatically:
+- Payment-failure troubleshooting runbooks
+- Authorization error runbooks
+- Past incident summaries
+- Deployment notes
+- Escalation guidance
+
+The current `RagService` performs keyword-based matching against this local content.
 
 ```text
-AI Diagnosis
-      ↓
-Evidence + Confidence
-      ↓
-Recommended Action
-      ↓
-Human Approval
-      ↓
-Jira / Slack / Incident API Execution
+Question
+   ↓
+Normalize keywords
+   ↓
+Search local runbooks and incident documents
+   ↓
+Return matching document snippets
+   ↓
+Attach snippets as investigation evidence
 ```
 
-This design keeps the system useful while preserving governance, accountability, and enterprise safety.
+### Why offline first?
+
+The offline MVP keeps development simple, reproducible, and free of API-key or cloud-service dependencies. It also makes it easier to demonstrate the investigation workflow before introducing external model providers or sensitive enterprise data.
+
+### Current limitations
+
+Offline keyword retrieval does not understand semantic meaning as well as embeddings. For example, a document about “authorization rejections” may not be found for a query using only “payment failures” unless the relevant terms overlap.
 
 ---
 
-## ML and RAG Design
+## Roles and Human Approval
 
-### Anomaly detection
+| Role | Can Investigate | Can Approve High-Risk Actions | Can Manage Documents |
+|---|---:|---:|---:|
+| `ADMIN` | Yes | Yes | Planned |
+| `ANALYST` | Yes | No | No |
+| `SUPPORT_ENGINEER` | Yes | No | No |
+| `VIEWER` | No | No | No |
 
-The initial detector compares payment failures in two seven-day windows:
+The MVP accepts a role as part of the request for local demonstration. This is not production authentication.
+
+High-risk recommendations are intentionally separated from action execution:
+
+```text
+Investigation
+      ↓
+Evidence and Risk Classification
+      ↓
+Recommended Operational Action
+      ↓
+Human Approval Required
+      ↓
+Future Jira, Slack, or Incident-Management Integration
+```
+
+This design prevents an automated system from directly taking high-impact operational actions.
+
+---
+
+## Anomaly Detection
+
+The current anomaly detector is intentionally transparent.
 
 ```text
 Current failure rate = failed payments / total payments
-Deviation = current failure rate - historical baseline
+Baseline failure rate = failed payments / total historical payments
+Deviation = current failure rate - baseline failure rate
 ```
 
-| Deviation | Risk |
+| Failure-rate deviation | Risk classification |
 |---|---|
 | Greater than 8 percentage points | High |
 | Greater than 3 percentage points | Medium |
-| 3 percentage points or below | Low |
+| 3 percentage points or lower | Low |
 
-The first implementation is intentionally simple and explainable. Future versions can use Isolation Forest, time-series forecasting, change-point detection, or supervised classification.
+Future model options include:
 
-### RAG roadmap
-
-```text
-Documents
-  ↓
-Chunking + metadata
-  ↓
-Embeddings
-  ↓
-Vector search
-  ↓
-Hybrid retrieval + reranking
-  ↓
-Permission filtering
-  ↓
-LLM response with citations
-```
-
-RAG sources can include payment runbooks, incident postmortems, deployment notes, troubleshooting guides, support tickets, and architecture documentation.
+- Isolation Forest
+- Time-series anomaly detection
+- Seasonal baselines
+- Bayesian change-point detection
+- Supervised payment-failure classification
+- Drift detection and model monitoring
 
 ---
 
 ## Roadmap
 
-- **Data and ML:** migrate from H2 to PostgreSQL, add Flyway migrations, feature pipelines, and a trained anomaly model
-- **RAG:** add document ingestion, embeddings, pgvector/OpenSearch, hybrid retrieval, reranking, citations, and permission filtering
-- **Agentic AI:** add LLM tool calling, structured outputs, failure fallbacks, and approval-action endpoints
-- **Security:** add Spring Security, OAuth2/OIDC, tenant isolation, secret management, prompt-injection tests, and data masking
-- **Observability:** add OpenTelemetry, Prometheus metrics, Grafana dashboards, structured logs, and end-to-end traces
-- **Deployment:** add Docker Compose, GitHub Actions CI/CD, cloud deployment, and external Jira/Slack integrations
-- **Evaluation:** build a benchmark with 100–200 realistic incidents and measure diagnosis accuracy, retrieval quality, tool selection, latency, and cost
+### Semantic retrieval
+
+- Add document-ingestion workflow
+- Add text chunking and metadata
+- Add local embedding model support
+- Add PostgreSQL with pgvector
+- Add semantic similarity search and reranking
+- Return ranked, source-attributed citations
+
+pgvector is an open-source PostgreSQL extension for vector similarity search and can store vectors alongside application data. [web:116][web:168]
+
+### Security
+
+- Add Spring Security
+- Add OAuth2/OIDC and JWT validation
+- Add tenant-aware authorization filters
+- Add secrets management
+- Add prompt-injection test cases
+- Add tool allowlists and rate limiting
+
+### Agentic workflow
+
+- Add structured LLM tool calling
+- Add tool-selection evaluation
+- Add fallback behavior and retries
+- Add clarification questions
+- Add human action-approval endpoints
+
+### Quality and delivery
+
+- Add unit and integration tests
+- Add GitHub Actions CI
+- Add Docker Compose
+- Add PostgreSQL migrations with Flyway
+- Add observability with metrics, traces, and structured logs
+- Add a benchmark suite of synthetic incident cases
 
 ---
 
-## Portfolio Talking Points
+## Portfolio Scope
 
-> Built an enterprise AI incident-intelligence platform using Java and Spring Boot that combines payment anomaly detection, RAG-based runbook retrieval, agentic tool orchestration, RBAC, audit logging, and human approval workflows.
+IncidentIQ is designed as an FDE / Applied AI portfolio project. It focuses on how an AI-enabled platform should be scoped for enterprise operations:
 
-> Designed the project as a Forward Deployed AI Engineer use case: start with an ambiguous customer problem, integrate enterprise data, create measurable outcomes, and deploy safe AI workflows.
+- Start with an ambiguous operational problem
+- Connect relevant business and technical data
+- Produce evidence-backed investigation results
+- Separate read-only investigation from high-impact actions
+- Apply access controls and audit logs
+- Use human approval for consequential actions
+- Define a realistic roadmap for semantic RAG, LLM orchestration, security, and production deployment
 
-> Separated read-only investigation tools from high-impact action tools so AI can recommend operational actions without bypassing human oversight.
+### Honest implementation statement
+
+> The current repository implements an offline Spring Boot MVP with deterministic investigation orchestration, explainable anomaly detection, local keyword-based retrieval, role checks, and an approval-required recommendation contract. Vector search, embeddings, LLM tool calling, OAuth2/JWT authentication, and external action integrations are planned future enhancements.
 
 ---
 
@@ -393,8 +492,6 @@ AI Solutions Engineer
 Machine Learning Engineer
 Enterprise AI Platform Engineer
 ```
-
-Add your links before publishing:
 
 ```text
 GitHub: https://github.com/Mkatpelly
